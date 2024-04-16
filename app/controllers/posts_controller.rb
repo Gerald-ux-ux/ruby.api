@@ -1,4 +1,5 @@
 class PostsController < ApplicationController
+  # Get rid of the crsf error
   skip_before_action :verify_authenticity_token, only: [:create]
 
 
@@ -8,16 +9,21 @@ class PostsController < ApplicationController
 
 
 
- def create
-  post = Post.new(post_params)
-  if post_params.blank?
-    render json: { success: false, message: "Fill in the required fields" }, status: :unprocessable_entity
-  elsif post.save
-    render json: { success: true, message: "Your post has been created", data: post }, status: :created
+def create
+  if request.request_parameters.blank?
+    render json: { success: false, message: "Body can not be blank" }, status: :unprocessable_entity
   else
-    render json: { success: false, message: "An error has occurred" }, status: :unprocessable_entity
+    post = Post.new(post_params)
+    if post.title.blank? || post.content.blank?
+      render json: { success: false, message: "Fill in the required fields" }, status: :unprocessable_entity
+    elsif post.save
+      render json: { success: true, message: "Your post has been created", data: post }, status: :created
+    else
+      render json: { success: false, message: "An error has occurred" }, status: :unprocessable_entity
+    end
   end
 end
+
 
 
 
